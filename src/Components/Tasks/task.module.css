@@ -1,0 +1,9 @@
+
+.addTask{
+    /* position: absolute; */
+    left: 50px;
+    width: calc(100% - 50px - 40px); 
+    padding: 20px;
+    min-height: calc(100vh - 40px);
+}
+
