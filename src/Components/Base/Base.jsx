@@ -14,6 +14,7 @@ import {
 import LogoutIcon from "@mui/icons-material/Logout";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import { useNavigate } from "react-router-dom";
+import { useCommonContext } from "../../State Management/ContextApi";
 
 const style = {
   position: "absolute",
@@ -28,13 +29,41 @@ const style = {
 
 const Base = ({ children }) => {
   const navigate = useNavigate();
+  const { addTask } = useCommonContext();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    status: "to do",
+    description: "",
+  });
+
+  //   handling model
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
   const logoutFunction = () => {
     localStorage.removeItem("userToken");
     navigate("/login", { replace: true });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await addTask(formData, setLoading);
+    setFormData({
+      title: "",
+      status: "to do",
+      description: "",
+    });
+    handleClose();
   };
 
   return (
@@ -53,6 +82,7 @@ const Base = ({ children }) => {
           </abbr>
         </Typography>
       </div>
+      {/* Create task model */}
       <Modal
         open={open}
         onClose={handleClose}
@@ -61,7 +91,7 @@ const Base = ({ children }) => {
       >
         <Box
           component="form"
-          //   onSubmit={handleSubmit}
+          onSubmit={handleSubmit}
           sx={style}
           className={styles.taskBox}
         >
@@ -74,8 +104,8 @@ const Base = ({ children }) => {
               name="title"
               type="text"
               required
-              // value={formData.email}
-              // onChange={handleChange}
+              value={formData.title}
+              onChange={handleChange}
               InputProps={{
                 sx: {
                   color: "rgb(255, 211, 158)",
@@ -104,8 +134,9 @@ const Base = ({ children }) => {
               labelId="dropdown-label"
               id="dropdown"
               required
-              // value={selectedOption}
-              // onChange={handleChange}
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
               label="Select an Option"
               sx={{
                 color: "rgb(255, 211, 158)",
@@ -125,9 +156,9 @@ const Base = ({ children }) => {
                 },
               }}
             >
-              <MenuItem value="option1">Option 1</MenuItem>
-              <MenuItem value="option2">Option 2</MenuItem>
-              <MenuItem value="option3">Option 3</MenuItem>
+              <MenuItem value="to do">To Do</MenuItem>
+              <MenuItem value="inProgress">In Progress</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
             </Select>
           </Typography>
 
@@ -138,8 +169,8 @@ const Base = ({ children }) => {
             label="Description"
             name="description"
             required
-            // value={formData.password}
-            // onChange={handleChange}
+            value={formData.description}
+            onChange={handleChange}
             InputProps={{
               sx: {
                 color: "rgb(255, 211, 158)",
@@ -176,7 +207,7 @@ const Base = ({ children }) => {
                 sx={{ color: "rgb(210, 114, 248)" }}
               />
             ) : (
-              "ADD"
+              "Create"
             )}
           </Button>
         </Box>

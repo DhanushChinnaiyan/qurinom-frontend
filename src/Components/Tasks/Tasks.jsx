@@ -1,65 +1,75 @@
 import React, { useState, useEffect } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { useCommonContext } from "../../State Management/ContextApi";
-import Lists from "./Lists";
 import SingleList from "./SingleList";
+import styles from "./task.module.css";
+import { CircularProgress, Typography } from "@mui/material";
+
+const style = {
+  position: "absolute",
+  top: "40%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  p: 4,
+};
 
 const Tasks = () => {
+  const { data, editTask } = useCommonContext();
+  const [loading, setLoading] = useState(false);
 
-    const {data,setData} = useCommonContext()
+  const onDragEnd = (result) => {
+    const { destination, source } = result;
 
-    const onDragEnd = (result) => {
-    const { destination, source, draggableId } = result;
-
-    // Check if dropped outside a droppable area
-    if (!destination) return;
-
-    // Check if dropped in the same location
+    // return if destination not correct
     if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
+      !destination ||
+      (destination.droppableId === source.droppableId &&
+        destination.index === source.index)
     ) {
       return;
     }
 
-    // Retrieve the item that is being dragged
-    const item = data[source.droppableId][source.index];
-
-    // Remove the item from its original position
     const newData = { ...data };
+    // get dragging item
+    const draggedItem = newData[source.droppableId][source.index];
+
+    // Remove dragged item from previou location
     newData[source.droppableId].splice(source.index, 1);
-
-    // Add the item to the new position
-    newData[destination.droppableId].splice(destination.index, 0, item);
-
-    // Update the state with the new data
-    setData(newData);
+    // calling ediTask function to update the status
+    editTask(draggedItem, { status: destination.droppableId }, setLoading);
   };
-    
-      return (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="container">
-            {Object.keys(data).map((key) => (
-              <div key={key} className="column">
-                <h2>{key.toUpperCase()}</h2>
-                <Droppable droppableId={key}>
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="task-list"
-                    >
-                      {data[key].map((item, index) => (
-                        <SingleList item={item} index={index}/>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            ))}
-          </div>
-        </DragDropContext>
+
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className={styles.container}>
+        {loading ? (
+          <Typography component="div" sx={style}>
+            <CircularProgress />
+          </Typography>
+        ) : (
+          Object.keys(data).map((key) => (
+            <div key={key} className={styles.column}>
+              <h3 style={{ textAlign: "center" }}>{key.toUpperCase()}</h3>
+              <Droppable droppableId={key}>
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={styles.tasks}
+                    style={{ minHeight: "10px" }}
+                  >
+                    {data[key].map((item, index) => (
+                      <SingleList key={item._id} item={item} index={index} />
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          ))
+        )}
+      </div>
+    </DragDropContext>
   );
 };
 

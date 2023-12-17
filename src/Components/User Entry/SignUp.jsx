@@ -20,6 +20,7 @@ import {
         password: "",
       });
   
+    //   Check if user already logged in or not
     useEffect(() => {
       const userToken = localStorage.getItem("userToken");
       if(userToken){
@@ -46,7 +47,7 @@ import {
         setLoading(true);
         const response = await axios.post("https://qurinom-backend.onrender.com/user/signup",formData);
         const data = await response.data;
-        console.log(data)
+ 
         if (data.message === "Successfully registered") {
           localStorage.setItem("userToken",data.token)
           navigate("/");
